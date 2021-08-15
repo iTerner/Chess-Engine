@@ -93,9 +93,11 @@ def main():
                     if move in valid_moves:
                         gs.make_move(move)
                         move_made = True
-                    # reset user clicks
-                    selected_square = ()
-                    player_clicks = []
+                        selected_square = ()  # reset user clicks
+                        player_clicks = []
+                    else:
+                        player_clicks = [selected_square]
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_u:  # undo when 'u' is pressed
                     gs.undo_move()
