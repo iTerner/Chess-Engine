@@ -101,7 +101,7 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_u:  # undo when 'u' is pressed
                     gs.undo_move()
-                    move_made = False
+                    move_made = True
 
         if move_made:
             valid_moves = gs.get_valid_moves()
