@@ -8,6 +8,17 @@ class Move:
         self.piece_moved = board[self.start_row][self.start_col]
         # could be a piece or empty square ("--")
         self.piece_captured = board[self.end_row][self.end_col]
+        self.move_id = self.start_row * 1000 + self.start_col * \
+            100 + self.end_row * 10 + self.end_col
+
+    def __eq__(self, other):
+        """
+        Overriding the equals method 
+        """
+        if isinstance(other, Move):
+            if self.move_id == other.move_id:
+                return True
+        return False
 
     def get_chess_notation(self) -> str:
         """

@@ -63,6 +63,8 @@ def main():
     clock = pygame.time.Clock()
     win.fill(pygame.Color("white"))
     gs = GameState()
+    valid_moves = gs.get_valid_moves()
+    move_made = False  # flag variable for when a move is made
 
     run = True
     # no square is selected, keep track of the last click of the user (row, col)
@@ -73,6 +75,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 row, col = get_row_col_from_mouse(pygame.mouse.get_pos())
                 # check if the user clicked the same square twice
@@ -87,10 +90,20 @@ def main():
                 if len(player_clicks) == 2:
                     # after the second click, make the move
                     move = Move(player_clicks[0], player_clicks[1], gs.board)
-                    gs.make_move(move)
+                    if move in valid_moves:
+                        gs.make_move(move)
+                        move_made = True
                     # reset user clicks
                     selected_square = ()
                     player_clicks = []
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_u:  # undo when 'u' is pressed
+                    gs.undo_move()
+                    move_made = False
+
+        if move_made:
+            valid_moves = gs.get_valid_moves()
+            move_made = False
 
         draw_game_state(win, gs)
         clock.tick(MAX_FPS)
