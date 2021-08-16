@@ -71,11 +71,50 @@ STALEMATE = 0
 DEPTH = 3
 
 
+def move_sort(gs: GameState, valid_moves: list) -> list:
+    """
+    The function sort the moves by thier priority
+    """
+    # convert each move into a tuple where each field represent different type of move
+    # 1: if the move contains checkmate 1, otherwise 0
+    # 2: if the move contains check 1, otherwise 0
+    # 3: if the move contains promotion 1, otherwise 0
+    # 4: if the move contains capture 1, otherwise 0
+    tmp_moves = {}
+    for i in range(len(valid_moves)):
+        checkmate, check, promotion, capture = 0, 0, 0, 0
+        move = valid_moves[i]
+        gs.make_move(move)
+        if gs.inCheck:
+            check = 1
+        if gs.checkmate:
+            checkmate = 1
+        gs.undo_move()
+        if move.is_pawn_promotion:
+            promotion = 1
+        if move.is_capture:
+            capture = 1
+        tmp_moves[i] = [checkmate, check, promotion, capture, move]
+
+    # sort the dictionary by the priority
+    sorted_list = sorted(tmp_moves.values(),
+                         key=lambda x: (x[0], x[1]), reverse=True)
+    sorted_moves = [move for _, _, _, _, move in sorted_list]
+    return sorted_moves
+
+
 def find_best_move(gs: GameState, valid_moves: list, return_queue: Queue) -> None:
     global next_move
     next_move = None
-    random.shuffle(valid_moves)
-    find_move_nega_max_alpha_beta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE,
+    # random.shuffle(valid_moves)
+
+    # sort the moves
+    sorted_moves = move_sort(gs, valid_moves)
+
+    # add book move data base
+
+    # find the best move
+    find_move_nega_max_alpha_beta(gs, sorted_moves, DEPTH, -CHECKMATE, CHECKMATE,
                                   1 if gs.whiteToMove else -1)
     return_queue.put(next_move)
 
