@@ -35,20 +35,27 @@ class GameState:
             "K": self.get_king_moves
         }
 
+        # game results
         self.checkmate = False
         self.stalemate = False
 
+        # king locations
         self.white_king_loc = (7, 4)
         self.black_king_loc = (0, 4)
 
+        # checks
         self.inCheck = False
         self.pins = []  # pieces that have pin
         self.check = []  # piece that attack the oppenent king
 
+        # enpassant
         self.enpassant_possible = ()  # cordinates for the square where en-passent is possible
+        self.enpassant_possible_log = [self.enpassant_possible]
 
+        # castling
         self.current_castling_rights = CastleRights(True, True, True, True)
-        self.castling_rights_log = [self.current_castling_rights]
+        self.castle_rights_log = [CastleRights(self.current_castling_rights.wks, self.current_castling_rights.bks,
+                                               self.current_castling_rights.wqs, self.current_castling_rights.bqs)]
 
     def make_move(self, move: Move) -> None:
         """
@@ -74,7 +81,8 @@ class GameState:
 
         # enpassant move
         if move.is_enpassant_move:
-            self.board[move.start_row][move.end_col] = "--"  # capturing pawn
+            # capturing the pawn
+            self.board[move.start_row][move.end_col] = "--"
 
         # update enpassant_possible variable
         # only on 2 square pawn promote
@@ -83,6 +91,30 @@ class GameState:
                 (move.start_row + move.end_row) // 2, move.start_col)
         else:
             self.enpassant_possible = ()
+
+        # castle move
+        if move.is_castle_move:
+            if move.end_col - move.start_col == 2:  # king-side castle move
+                # moves the rook to its new square
+                self.board[move.end_row][move.end_col - 1] = self.board[move.end_row][
+                    move.end_col + 1]
+                # erase old rook
+                self.board[move.end_row][move.end_col +
+                                         1] = "--"
+            else:  # queen-side castle move
+                # moves the rook to its new square
+                self.board[move.end_row][move.end_col + 1] = self.board[move.end_row][
+                    move.end_col - 2]
+                # erase old rook
+                self.board[move.end_row][move.end_col -
+                                         2] = "--"
+
+        self.enpassant_possible_log.append(self.enpassant_possible)
+
+        # update castling rights - whenever it is a rook or king move
+        self.updateCastleRights(move)
+        self.castle_rights_log.append(CastleRights(self.current_castling_rights.wks, self.current_castling_rights.bks,
+                                                   self.current_castling_rights.wqs, self.current_castling_rights.bqs))
 
     def undo_move(self) -> None:
         """
@@ -106,11 +138,63 @@ class GameState:
                 # leave landing square empty
                 self.board[move.end_row][move.end_col] = "--"
                 self.board[move.start_row][move.end_col] = move.piece_captured
-                self.enpassant_possible = (move.end_row, move.end_col)
 
-            # undo a 2 square pawn advance
-            if move.piece_moved[1] == "p" and abs(move.end_row - move.start_row) == 2:
-                self.enpassant_possible = ()
+            self.enpassant_possible_log.pop()
+            self.enpassant_possible = self.enpassant_possible_log[-1]
+
+            # undo castle rights
+            # get rid of the new castle rights from the move we are undoing
+            self.castle_rights_log.pop
+            # set the current castle rights to the last one in the list
+            self.current_castling_rights = self.castle_rights_log[-1]
+            # undo the castle move
+            if move.is_castle_move:
+                if move.end_col - move.start_col == 2:  # king-side castle
+                    self.board[move.end_row][move.end_col +
+                                             1] = self.board[move.end_row][move.end_col - 1]
+                    self.board[move.end_row][move.end_col - 1] = '--'
+                else:  # queen-side castle
+                    self.board[move.end_row][move.end_col -
+                                             2] = self.board[move.end_row][move.end_col + 1]
+                    self.board[move.end_row][move.end_col + 1] = '--'
+
+            # update results
+            self.checkmate = False
+            self.stalemate = False
+
+    def update_castling_rights(self, move: Move) -> None:
+        """
+        The function updates the castling rights given the move
+        """
+        if move.piece_captured == "wR":
+            if move.end_col == 0:  # left rook
+                self.current_castling_rights.wqs = False
+            elif move.end_col == 7:  # right rook
+                self.current_castling_rights.wks = False
+        elif move.piece_captured == "bR":
+            if move.end_col == 0:  # left rook
+                self.current_castling_rights.bqs = False
+            elif move.end_col == 7:  # right rook
+                self.current_castling_rights.bks = False
+
+        if move.piece_moved == 'wK':
+            self.current_castling_rights.wqs = False
+            self.current_castling_rights.wks = False
+        elif move.piece_moved == 'bK':
+            self.current_castling_rights.bqs = False
+            self.current_castling_rights.bks = False
+        elif move.piece_moved == 'wR':
+            if move.start_row == 7:
+                if move.start_col == 0:  # left rook
+                    self.current_castling_rights.wqs = False
+                elif move.start_col == 7:  # right rook
+                    self.current_castling_rights.wks = False
+        elif move.piece_moved == 'bR':
+            if move.start_row == 0:
+                if move.start_col == 0:  # left rook
+                    self.current_castling_rights.bqs = False
+                elif move.start_col == 7:  # right rook
+                    self.current_castling_rights.bks = False
 
     def in_check(self) -> bool:
         """
