@@ -9,6 +9,7 @@ from const import WIDTH, HEIGHT, SQUARE_SIZE, DIMENSIONS, IMAGES, MOVE_LOG_PANEL
 from move import Move
 import sys
 from multiprocessing import Process, Queue
+from ai import find_best_move, find_random_move
 pygame.init()
 
 MAX_FPS = 15
@@ -34,8 +35,8 @@ def draw_board(win: pygame.display) -> None:
     for row in range(DIMENSIONS):
         for col in range(row % 2, DIMENSIONS, 2):
             color = colors[((row + col) % 2)]
-            pygame.draw.rect(win, color, p.Rect(col * SQUARE_SIZE,
-                                                row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            pygame.draw.rect(win, color, pygame.Rect(col * SQUARE_SIZE,
+                                                     row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
 def draw_pieces(win: pygame.display, board: list) -> None:
@@ -55,8 +56,8 @@ def highlight_squares(win: pygame.display, gs: GameState, valid_moves: list, sel
     """
     Highlight square selected and moves for piece selected.
     """
-    if (len(gs.move_log)) > 0:
-        last_move = gs.move_log[-1]
+    if (len(gs.moveLog)) > 0:
+        last_move = gs.moveLog[-1]
         s = pygame.Surface((SQUARE_SIZE, SQUARE_SIZE))
         s.set_alpha(100)
         s.fill(pygame.Color('green'))
@@ -65,7 +66,7 @@ def highlight_squares(win: pygame.display, gs: GameState, valid_moves: list, sel
     if selected_square != ():
         row, col = selected_square
         if gs.board[row][col][0] == (
-                'w' if gs.white_to_move else 'b'):  # square_selected is a piece that can be moved
+                'w' if gs.whiteToMove else 'b'):  # square_selected is a piece that can be moved
             # highlight selected square
             s = pygame.Surface((SQUARE_SIZE, SQUARE_SIZE))
             # transparency value 0 -> transparent, 255 -> opaque
@@ -87,7 +88,7 @@ def draw_move_log(win: pygame.display, gs: GameState, font: pygame.font) -> None
     move_log_rect = pygame.Rect(
         WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
     pygame.draw.rect(win, pygame.Color('black'), move_log_rect)
-    move_log = gs.move_log
+    move_log = gs.moveLog
     move_texts = []
     for i in range(0, len(move_log), 2):
         move_string = str(i // 2 + 1) + '. ' + str(move_log[i]) + " "
@@ -168,7 +169,7 @@ def draw_game_state(win: pygame.display, gs: GameState, valid_moves: list, selec
 
 
 def main():
-    win = pygame.display.set_mode((WIDTH, HEIGHT))
+    win = pygame.display.set_mode((WIDTH + MOVE_LOG_PANEL_WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     win.fill(pygame.Color("white"))
     gs = GameState()
@@ -189,7 +190,7 @@ def main():
     move_log_font = pygame.font.SysFont("Arial", 14, False, False)
 
     player_one = True  # if a human is playing white, then this will be True, else False
-    player_two = False  # if a hyman is playing white, then this will be True, else False
+    player_two = False  # if a human is playing white, then this will be True, else False
 
     while run:
         human_turn = (gs.whiteToMove and player_one) or (
@@ -255,22 +256,22 @@ def main():
                 if not ai_thinking:
                     ai_thinking = True
                     return_queue = Queue()  # used to pass data between threads
-                    # move_finder_process = Process(target=ChessAI.findBestMove, args=(
-                    #     game_state, valid_moves, return_queue))
+                    move_finder_process = Process(
+                        target=find_best_move, args=(gs, valid_moves, return_queue))
                     move_finder_process.start()
                 if not move_finder_process.is_alive():
                     ai_move = return_queue.get()
                     if ai_move is None:
-                        # ai_move = ChessAI.findRandomMove(valid_moves)
-                    gs.makeMove(ai_move)
+                        ai_move = find_random_move(valid_moves)
+                    gs.make_move(ai_move)
                     move_made = True
                     animate = True
                     ai_thinking = False
 
         if move_made:
             if animate:
-                animateMove(gs.move_log[-1], win, gs.board, clock)
-            valid_moves = gs.getValidMoves()
+                animateMove(gs.moveLog[-1], win, gs.board, clock)
+            valid_moves = gs.get_valid_moves()
             move_made = False
             animate = False
             move_undone = False
@@ -282,7 +283,7 @@ def main():
 
         if gs.checkmate:
             game_over = True
-            if gs.white_to_move:
+            if gs.whiteToMove:
                 draw_end_game_text(win, "Black wins by checkmate")
             else:
                 draw_end_game_text(win, "White wins by checkmate")
