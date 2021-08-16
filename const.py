@@ -18,3 +18,6 @@ ROW2RANK = {v: k for k, v in RANK2ROW.items()}
 
 FILES2COLS = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
 COL2FILE = {v: k for k, v in FILES2COLS.items()}
+
+MOVE_LOG_PANEL_WIDTH = 250
+MOVE_LOG_PANEL_HEIGHT = HEIGHT
