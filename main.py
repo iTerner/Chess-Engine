@@ -90,12 +90,14 @@ def main():
                 if len(player_clicks) == 2:
                     # after the second click, make the move
                     move = Move(player_clicks[0], player_clicks[1], gs.board)
-                    if move in valid_moves:
-                        gs.make_move(move)
-                        move_made = True
-                        selected_square = ()  # reset user clicks
-                        player_clicks = []
-                    else:
+                    print(move.get_chess_notation())
+                    for i in range(len(valid_moves)):
+                        if move == valid_moves[i]:
+                            gs.make_move(valid_moves[i])
+                            move_made = True
+                            selected_square = ()  # reset user clicks
+                            player_clicks = []
+                    if not move_made:
                         player_clicks = [selected_square]
 
             elif event.type == pygame.KEYDOWN:
