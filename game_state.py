@@ -506,7 +506,7 @@ class GameState:
                 break
 
         dir = ((-2, -1), (-2, 1), (-1, -2), (-1, 2),
-               (1, -2), (1, 2), (2, -1), (2, -1))
+               (1, -2), (1, 2), (2, -1), (2, 1))
         ally_color = "w" if self.whiteToMove else "b"
         for d in dir:
             end_row = row + d[0]

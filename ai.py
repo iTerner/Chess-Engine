@@ -8,7 +8,7 @@ from move import Move
 from multiprocessing import Queue
 
 
-PIECE_SCORE = {"K": 0, "Q": 9, "R": 5, "B": 3, "N": 3, "p": 1}
+PIECE_SCORE = {"K": 200, "Q": 9, "R": 5, "B": 3, "N": 3, "p": 1}
 
 KNIGHT_SCORE = [[0.0, 0.1, 0.2, 0.2, 0.2, 0.2, 0.1, 0.0],
                 [0.1, 0.3, 0.5, 0.5, 0.5, 0.5, 0.3, 0.1],
