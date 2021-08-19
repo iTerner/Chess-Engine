@@ -35,6 +35,9 @@ class GameState:
             "K": self.get_king_moves
         }
 
+        # number of pieces
+        self.piece_count = self.count_pieces_on_board()
+
         # game results
         self.checkmate = False
         self.stalemate = False
@@ -56,6 +59,17 @@ class GameState:
         self.current_castling_rights = CastleRights(True, True, True, True)
         self.castle_rights_log = [CastleRights(self.current_castling_rights.wks, self.current_castling_rights.bks,
                                                self.current_castling_rights.wqs, self.current_castling_rights.bqs)]
+
+    def count_pieces_on_board(self) -> int:
+        """
+        The function count the number of pieces on the board
+        """
+        count = 0
+        for row in self.board:
+            for cell in row:
+                if cell != "--":
+                    count += 1
+        return count
 
     def make_move(self, move: Move) -> None:
         """
@@ -116,6 +130,10 @@ class GameState:
         self.castle_rights_log.append(CastleRights(self.current_castling_rights.wks, self.current_castling_rights.bks,
                                                    self.current_castling_rights.wqs, self.current_castling_rights.bqs))
 
+        if move.is_capture:
+            # update piece count
+            self.piece_count -= 1
+
     def undo_move(self) -> None:
         """
         The function undo the last move
@@ -161,6 +179,10 @@ class GameState:
             # update results
             self.checkmate = False
             self.stalemate = False
+
+            if move.is_capture:
+                # update the count of pieces
+                self.piece_count += 1
 
     def update_castling_rights(self, move: Move) -> None:
         """

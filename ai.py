@@ -69,6 +69,7 @@ PIECE_POSITION_SCORE = {"wN": KNIGHT_SCORE,
 CHECKMATE = 1000
 STALEMATE = 0
 DEPTH = 3
+ENDGAME_DEPTH = 5
 
 
 def move_sort(gs: GameState, valid_moves: list) -> list:
@@ -114,8 +115,14 @@ def find_best_move(gs: GameState, valid_moves: list, return_queue: Queue) -> Non
     # add book move data base
 
     # find the best move
-    find_move_nega_max_alpha_beta(gs, sorted_moves, DEPTH, -CHECKMATE, CHECKMATE,
-                                  1 if gs.whiteToMove else -1)
+    print(f"piece count {gs.piece_count}")
+    if gs.piece_count >= 9:
+        find_move_nega_max_alpha_beta(
+            gs, sorted_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    else:
+        print("started end game faze")
+        find_move_nega_max_alpha_beta(
+            gs, sorted_moves, ENDGAME_DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     return_queue.put(next_move)
 
 
@@ -166,7 +173,26 @@ def score_board(gs):
                 if piece[0] == "b":
                     score -= PIECE_SCORE[piece[1]] + piece_position_score
 
+    score += force_king_to_corner(gs.white_king_loc,
+                                  gs.black_king_loc, len(gs.moveLog))
     return score
+
+
+def force_king_to_corner(ally_king_loc: tuple, enemy_king_loc: tuple, move_count: int) -> float:
+    eval = 0
+    enemy_king_dist_center_row = max(
+        3 - enemy_king_loc[0], enemy_king_loc[0] - 4)
+    enemy_king_dist_center_col = max(
+        3 - enemy_king_loc[1], enemy_king_loc[1] - 4)
+    eval = enemy_king_dist_center_row + enemy_king_dist_center_col
+
+    # increase moving king closer to enemy king to help cut of the escape routes and help checkmate
+    king_dest_row = abs(ally_king_loc[0] - enemy_king_loc[0])
+    king_dest_col = abs(ally_king_loc[1] - enemy_king_loc[1])
+    dest_kings = king_dest_col + king_dest_row
+    eval += 14 - dest_kings
+
+    return eval * (move_count / 60)
 
 
 def find_random_move(valid_moves):
