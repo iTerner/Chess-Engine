@@ -10,6 +10,8 @@ from move import Move
 import sys
 from multiprocessing import Process, Queue
 from ai import find_best_move, find_random_move
+import pprint
+
 pygame.init()
 
 MAX_FPS = 15
@@ -262,7 +264,7 @@ def main():
                 if not move_finder_process.is_alive():
                     ai_move = return_queue.get()
                     if ai_move is None:
-                        ai_move = find_random_move(valid_moves)
+                        ai_move = find_best_move(valid_moves)
                     gs.make_move(ai_move)
                     move_made = True
                     animate = True
@@ -275,6 +277,7 @@ def main():
             move_made = False
             animate = False
             move_undone = False
+            pprint.pprint(gs.board)
 
         draw_game_state(win, gs, valid_moves, selected_square)
 

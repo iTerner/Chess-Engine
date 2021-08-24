@@ -162,7 +162,7 @@ class GameState:
 
             # undo castle rights
             # get rid of the new castle rights from the move we are undoing
-            self.castle_rights_log.pop
+            self.castle_rights_log.pop()
             # set the current castle rights to the last one in the list
             self.current_castling_rights = self.castle_rights_log[-1]
             # undo the castle move
