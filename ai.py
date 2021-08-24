@@ -192,7 +192,7 @@ def force_king_to_corner(ally_king_loc: tuple, enemy_king_loc: tuple, move_count
     dest_kings = king_dest_col + king_dest_row
     eval += 14 - dest_kings
 
-    return eval * (move_count / 60)
+    return eval * (move_count / 90)
 
 
 def find_random_move(valid_moves):

@@ -297,7 +297,7 @@ class GameState:
 
         # look for knight checks
         knight_moves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2),
-                        (1, -2), (1, 2), (2, -1), (2, -1))
+                        (1, -2), (1, 2), (2, 1), (2, -1))
         for m in knight_moves:
             end_row, end_col = start_row + m[0], start_col + m[1]
             if 0 <= end_row < 8 and 0 <= end_col < 8:
