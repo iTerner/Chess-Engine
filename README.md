@@ -1,6 +1,8 @@
 # Python Chess Engine
 
-!(chess_ex.png)
+<p align="center">
+  <img src=".\chess_ex.png" width="350" alt="accessibility text">
+</p>
 
 ## Table of contents
 
