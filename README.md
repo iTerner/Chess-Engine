@@ -1,5 +1,7 @@
 # Python Chess Engine
 
+!(chess_ex.png)
+
 ## Table of contents
 
 - [General info](#general-info)
